@@ -1,45 +1,21 @@
-module "label_courses" {
-  source = "cloudposse/label/null"
-  # Cloud Posse recommends pinning every module to a specific version
-  version = "0.25.0"
 
-  namespace   = var.namespace
-  stage       = var.stage
-  environment = var.environment
-  label_order = var.label_order
+module "table_courses" {
+  source = "./modules/dynamodb"
+  context = module.label.context
   name = "course"
 }
-
-module "label_authors" {
-  source = "cloudposse/label/null"
-  # Cloud Posse recommends pinning every module to a specific version
-  version = "0.25.0"
-
-  namespace   = var.namespace
-  stage       = var.stage
-  environment = var.environment
-  label_order = var.label_order
-  name = "authors"
+module "table_authors" {
+  source  = "./modules/dynamodb"
+  context = module.label.context
+  name    = "authors"
 }
-
-resource "aws_dynamodb_table" "courses" {
-  name         = module.label.id
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "TestTableHashKey"
-
-  attribute {
-    name = "TestTableHashKey"
-    type = "S"
+module "lambda_functions" {
+  source  = "./modules/lambda"
+  context = module.label.context 
+  courses_table = module.table_courses.table_name
+  authors_table = module.table_authors.table_name
+  courses_table_arn = module.table_courses.table_arn
+  authors_table_arn = module.table_authors.table_arn
   }
-}
 
-resource "aws_dynamodb_table" "authors" {
-  name         = module.label.id
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "TestTableHashKey"
 
-  attribute {
-    name = "TestTableHashKey"
-    type = "S"
-  }
-}
